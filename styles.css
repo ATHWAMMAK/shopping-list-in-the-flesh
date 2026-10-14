@@ -194,3 +194,109 @@ delete-button:hover {
 .edit-button:hover {
     background-color: #0056b3;
 }
+
+#shopping-message {
+    padding: 10px;
+    margin: 15px 0;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+#shopping-message:empty {
+    display: none;
+}
+
+#shopping-message.success {
+    color: #155724;
+    background-color: #d4edda;
+}
+
+#shopping-message.error {
+    color: #721c24;
+    background-color: #f8d7da;
+}
+
+
+#cost-summary {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f4f4f4;
+}
+
+#cost-summary p {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+#cost-summary p:last-child {
+    padding-top: 10px;
+    border-top: 1px solid #ccc;
+    font-weight: bold;
+}
+
+.edit-form {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 5px;
+}
+
+.edit-name,
+.edit-price {
+    padding: 7px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-width: 80px;
+    max-width: 150px;
+    box-sizing: border-box;
+}
+
+.save-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.save-button:hover {
+    background-color: #218838;
+}
+
+.cancel-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.cancel-button:hover {
+    background-color: #5a6268;
+}
+
+@media (max-width: 480px) {
+    .edit-form {
+        display: flex;
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    .edit-name,
+    .edit-price {
+        flex: 1;
+        min-width: 0;
+        width: 100%;
+    }
+
+    #cost-summary p {
+        font-size: 14px;
+    }
+}
