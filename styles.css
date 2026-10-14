@@ -147,3 +147,50 @@ button {
         flex-wrap: wrap;
     }
 }
+
+/* Style items that have been purchased */
+.purchased .item-name {
+    text-decoration: line-through;
+    color: gray;
+}
+
+.purchased {
+    background-color: #d4edda;
+}
+
+
+#total-cost {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+
+.delete-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin-left: 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+delete-button:hover {
+    background-color: #c82333;
+}
+
+.edit-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin-left: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.edit-button:hover {
+    background-color: #0056b3;
+}
