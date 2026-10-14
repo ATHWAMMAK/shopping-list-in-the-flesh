@@ -1,0 +1,149 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 80%;
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 25px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 25px;
+}
+
+
+.input-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.input-section input {
+    flex: 1;
+    min-width: 150px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+
+.input-section input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+
+button {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+
+#add-button {
+    background-color: #3498db;
+    color: white;
+}
+
+#add-button:hover {
+    background-color: #2980b9;
+}
+
+
+#shopping-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+
+#shopping-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+}
+
+
+#shopping-list li.purchased {
+    background-color: #e8f5e9;
+    color: #777;
+    text-decoration: line-through;
+}
+
+
+.button-section {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+
+#mark-purchased-button {
+    flex: 1;
+    background-color: #27ae60;
+    color: white;
+}
+
+#mark-purchased-button:hover {
+    background-color: #219150;
+}
+
+
+#clear-button {
+    flex: 1;
+    background-color: #e74c3c;
+    color: white;
+}
+
+#clear-button:hover {
+    background-color: #c0392b;
+}
+
+
+@media (max-width: 600px) {
+    .container {
+        width: auto;
+        margin: 20px 12px;
+        padding: 18px;
+    }
+
+    .input-section {
+        flex-direction: column;
+    }
+
+    .input-section input,
+    .input-section button {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .button-section {
+        flex-direction: column;
+    }
+
+    #shopping-list li {
+        flex-wrap: wrap;
+    }
+}
