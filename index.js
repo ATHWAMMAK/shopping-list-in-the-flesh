@@ -1,4 +1,5 @@
 
+
 const itemInput = document.getElementById("item-input");
 const priceInput = document.getElementById("price-input");
 const addButton = document.getElementById("add-button");
@@ -7,10 +8,38 @@ const markPurchasedButton = document.getElementById("mark-purchased-button");
 const clearButton = document.getElementById("clear-button");
 
 
-const totalDisplay = document.createElement("p");
-totalDisplay.id = "total-cost";
-totalDisplay.textContent = "Total Cost: 0.00";
-shoppingList.after(totalDisplay);
+const messageDisplay = document.createElement("p");
+
+messageDisplay.id = "shopping-message";
+messageDisplay.setAttribute("role", "status");
+messageDisplay.setAttribute("aria-live", "polite");
+
+shoppingList.before(messageDisplay);
+
+
+// Display messages without using alert()
+function showMessage(message, type = "success") {
+    messageDisplay.textContent = message;
+    messageDisplay.className = type;
+}
+
+
+
+
+const summaryDisplay = document.createElement("div");
+
+summaryDisplay.id = "cost-summary";
+
+summaryDisplay.innerHTML = `
+    <p>Full List Total: <span id="full-total">0.00</span></p>
+    <p>Purchased Total: <span id="purchased-total">0.00</span></p>
+    <p>Remaining to Spend: <span id="remaining-total">0.00</span></p>
+`;
+
+shoppingList.after(summaryDisplay);
+
+
+
 
 let shoppingItems = [];
 
@@ -26,6 +55,7 @@ try {
                     item &&
                     typeof item.name === "string" &&
                     item.name.trim() !== "" &&
+                    typeof item.price === "number" &&
                     Number.isFinite(item.price) &&
                     item.price >= 0 &&
                     typeof item.purchased === "boolean"
@@ -34,7 +64,11 @@ try {
         }
     }
 } catch (error) {
-    console.error("Could not load the saved shopping list:", error);
+    console.error("Unable to load shopping list:", error);
+    showMessage(
+        "The saved shopping list could not be loaded.",
+        "error"
+    );
 }
 
 
@@ -46,9 +80,17 @@ function saveItems() {
             "shoppingItems",
             JSON.stringify(shoppingItems)
         );
+
+        return true;
     } catch (error) {
-        alert("Unable to save your shopping list in this browser.");
-        console.error("Could not save shopping list:", error);
+        console.error("Unable to save shopping list:", error);
+
+        showMessage(
+            "Unable to save changes in this browser.",
+            "error"
+        );
+
+        return false;
     }
 }
 
@@ -59,125 +101,133 @@ function renderShoppingList() {
     shoppingList.innerHTML = "";
 
     shoppingItems.forEach(function (item, index) {
-        // Create the list item
         const listItem = document.createElement("li");
+
+        listItem.dataset.index = index;
 
         if (item.purchased) {
             listItem.classList.add("purchased");
         }
 
-        // Create checkbox
+        // Checkbox
         const checkbox = document.createElement("input");
+
         checkbox.type = "checkbox";
         checkbox.className = "item-checkbox";
         checkbox.checked = item.purchased;
-        checkbox.setAttribute("aria-label", "Mark " + item.name + " as purchased");
 
-        // Create item name
+        checkbox.setAttribute(
+            "aria-label",
+            "Mark " + item.name + " as purchased"
+        );
+
+        // Item name
         const nameSpan = document.createElement("span");
+
         nameSpan.className = "item-name";
         nameSpan.textContent = item.name;
 
-        // Create item price
+        // Item price
         const priceSpan = document.createElement("span");
+
         priceSpan.className = "item-price";
         priceSpan.textContent = " - " + item.price.toFixed(2);
 
-        // Create Edit button
+        // Edit button
         const editButton = document.createElement("button");
+
+        editButton.type = "button";
         editButton.textContent = "Edit";
         editButton.className = "edit-button";
-        editButton.dataset.index = index;
 
-        // Create Delete button
+        // Delete button
         const deleteButton = document.createElement("button");
+
+        deleteButton.type = "button";
         deleteButton.textContent = "Delete";
         deleteButton.className = "delete-button";
-        deleteButton.dataset.index = index;
 
-        // Add elements to the list item
+        // Assemble the list item
         listItem.appendChild(checkbox);
         listItem.appendChild(nameSpan);
         listItem.appendChild(priceSpan);
         listItem.appendChild(editButton);
         listItem.appendChild(deleteButton);
 
-        // Add the item to the shopping list
         shoppingList.appendChild(listItem);
     });
 
-    updateTotal();
+    updateTotals();
 }
 
 
 
-
 addButton.addEventListener("click", function () {
-    const itemName = itemInput.value.trim();
-    const priceValue = priceInput.value.trim();
-    const itemPrice = Number(priceValue);
+    const name = itemInput.value.trim();
+    const priceText = priceInput.value.trim();
+    const price = Number(priceText);
 
-    
-    if (itemName === "") {
-        alert("Please enter a shopping item.");
+    // Validate item name
+    if (name === "") {
+        showMessage("Please enter an item name.", "error");
+        itemInput.focus();
         return;
     }
 
-
+    // Validate price
     if (
-        priceValue === "" ||
-        !Number.isFinite(itemPrice) ||
-        itemPrice < 0
+        priceText === "" ||
+        !Number.isFinite(price) ||
+        price < 0
     ) {
-        alert("Please enter a valid price.");
+        showMessage("Please enter a valid, non-negative price.", "error");
+        priceInput.focus();
         return;
     }
 
-    
-    const newItem = {
-        name: itemName,
-        price: itemPrice,
+    // Add the item
+    shoppingItems.push({
+        name: name,
+        price: price,
         purchased: false
-    };
-
-    
-    shoppingItems.push(newItem);
-
-    
-    saveItems();
-    renderShoppingList();
-
-    
-    itemInput.value = "";
-    priceInput.value = "";
-    itemInput.focus();
-});
-
-
-
-shoppingList.addEventListener("change", function (event) {
-    if (event.target.classList.contains("item-checkbox")) {
-        const listItem = event.target.closest("li");
-        const index = Array.from(shoppingList.children).indexOf(listItem);
-
-        if (index !== -1) {
-            shoppingItems[index].purchased = event.target.checked;
-
-            saveItems();
-            renderShoppingList();
-        }
-    }
-});
-
-
-
-markPurchasedButton.addEventListener("click", function () {
-    shoppingItems.forEach(function (item) {
-        item.purchased = true;
     });
 
     saveItems();
     renderShoppingList();
+
+    itemInput.value = "";
+    priceInput.value = "";
+
+    itemInput.focus();
+
+    showMessage(name + " was added to your shopping list.");
+});
+
+
+
+
+shoppingList.addEventListener("change", function (event) {
+    if (!event.target.classList.contains("item-checkbox")) {
+        return;
+    }
+
+    const listItem = event.target.closest("li");
+    const index = Number(listItem.dataset.index);
+
+    if (!shoppingItems[index]) {
+        return;
+    }
+
+    shoppingItems[index].purchased = event.target.checked;
+
+    saveItems();
+    renderShoppingList();
+
+    if (event.target.checked) {
+        showMessage(shoppingItems[index].name + " marked as purchased.");
+    } else {
+        showMessage(shoppingItems[index].name + " marked as not purchased.");
+    }
 });
 
 
@@ -186,106 +236,226 @@ markPurchasedButton.addEventListener("click", function () {
 shoppingList.addEventListener("click", function (event) {
     const listItem = event.target.closest("li");
 
-    if (!listItem) {
+    if (!listItem || !shoppingList.contains(listItem)) {
         return;
     }
 
-    const index = Array.from(shoppingList.children).indexOf(listItem);
+    const index = Number(listItem.dataset.index);
+    const item = shoppingItems[index];
 
-    if (index === -1) {
+    if (!item) {
         return;
     }
 
-    
+
+    // --------------------------------------
+    // EDIT ITEM INLINE
+    // --------------------------------------
+
     if (event.target.classList.contains("edit-button")) {
-        const item = shoppingItems[index];
-
-        const newName = prompt("Enter the new item name:", item.name);
-
-        
-        if (newName === null) {
+        // Don't create another edit form if one is already open
+        if (listItem.querySelector(".edit-form")) {
             return;
         }
 
-        if (newName.trim() === "") {
-            alert("The item name cannot be empty.");
-            return;
-        }
+        listItem.innerHTML = "";
 
-        const newPrice = prompt("Enter the new item price:", item.price);
+        // Keep the checkbox visible while editing
+        const checkbox = document.createElement("input");
 
-        if (newPrice === null) {
-            return;
-        }
+        checkbox.type = "checkbox";
+        checkbox.className = "item-checkbox";
+        checkbox.checked = item.purchased;
 
-        const parsedPrice = Number(newPrice.trim());
-
-        if (
-            newPrice.trim() === "" ||
-            !Number.isFinite(parsedPrice) ||
-            parsedPrice < 0
-        ) {
-            alert("Please enter a valid price.");
-            return;
-        }
-
-        
-        item.name = newName.trim();
-        item.price = parsedPrice;
-
-        saveItems();
-        renderShoppingList();
-    }
-
-    
-    if (event.target.classList.contains("delete-button")) {
-        const confirmed = confirm(
-            "Are you sure you want to delete " +
-            shoppingItems[index].name +
-            "?"
+        checkbox.setAttribute(
+            "aria-label",
+            "Mark " + item.name + " as purchased"
         );
 
-        if (confirmed) {
-            shoppingItems.splice(index, 1);
+        // Create inline edit form
+        const editForm = document.createElement("div");
 
-            saveItems();
-            renderShoppingList();
-        }
-    }
-    });
+        editForm.className = "edit-form";
 
+        // Name field
+        const nameField = document.createElement("input");
 
-clearButton.addEventListener("click", function () {
-    if (shoppingItems.length === 0) {
+        nameField.type = "text";
+        nameField.className = "edit-name";
+        nameField.value = item.name;
+        nameField.setAttribute("aria-label", "Item name");
+
+        // Price field
+        const priceField = document.createElement("input");
+
+        priceField.type = "number";
+        priceField.className = "edit-price";
+        priceField.min = "0";
+        priceField.step = "any";
+        priceField.value = item.price;
+        priceField.setAttribute("aria-label", "Item price");
+
+        // Save button
+        const saveButton = document.createElement("button");
+
+        saveButton.type = "button";
+        saveButton.textContent = "Save";
+        saveButton.className = "save-button";
+
+        // Cancel button
+        const cancelButton = document.createElement("button");
+
+        cancelButton.type = "button";
+        cancelButton.textContent = "Cancel";
+        cancelButton.className = "cancel-button";
+
+        editForm.appendChild(nameField);
+        editForm.appendChild(priceField);
+        editForm.appendChild(saveButton);
+        editForm.appendChild(cancelButton);
+
+        listItem.appendChild(checkbox);
+        listItem.appendChild(editForm);
+
+        nameField.focus();
+        nameField.select();
+
+        showMessage("Edit the item name or price, then select Save.");
+
         return;
     }
 
-    const confirmed = confirm(
-        "Are you sure you want to clear the entire shopping list?"
-    );
 
-    if (confirmed) {
-        shoppingItems = [];
+    
+
+    if (event.target.classList.contains("save-button")) {
+        const nameField = listItem.querySelector(".edit-name");
+        const priceField = listItem.querySelector(".edit-price");
+
+        if (!nameField || !priceField) {
+            return;
+        }
+
+        const newName = nameField.value.trim();
+        const priceText = priceField.value.trim();
+        const newPrice = Number(priceText);
+
+        if (newName === "") {
+            showMessage("The item name cannot be empty.", "error");
+            nameField.focus();
+            return;
+        }
+
+        if (
+            priceText === "" ||
+            !Number.isFinite(newPrice) ||
+            newPrice < 0
+        ) {
+            showMessage("Please enter a valid, non-negative price.", "error");
+            priceField.focus();
+            return;
+        }
+
+        
+        item.name = newName;
+        item.price = newPrice;
 
         saveItems();
         renderShoppingList();
+
+        showMessage(newName + " was updated successfully.");
+
+        return;
+    }
+
+
+    
+
+    if (event.target.classList.contains("cancel-button")) {
+        renderShoppingList();
+
+        showMessage("Editing cancelled. No changes were made.");
+
+        return;
+    }
+
+
+    
+
+    if (event.target.classList.contains("delete-button")) {
+        const deletedName = item.name;
+
+        shoppingItems.splice(index, 1);
+
+        saveItems();
+        renderShoppingList();
+
+        showMessage(deletedName + " was removed from your list.");
     }
 });
 
 
 
 
-function updateTotal() {
-    let total = 0;
+markPurchasedButton.addEventListener("click", function () {
+    if (shoppingItems.length === 0) {
+        showMessage("Your shopping list is empty.", "error");
+        return;
+    }
 
     shoppingItems.forEach(function (item) {
+        item.purchased = true;
+    });
+
+    saveItems();
+    renderShoppingList();
+
+    showMessage("All items have been marked as purchased.");
+});
+
+
+
+
+clearButton.addEventListener("click", function () {
+    if (shoppingItems.length === 0) {
+        showMessage("Your shopping list is already empty.", "error");
+        return;
+    }
+
+    shoppingItems = [];
+
+    saveItems();
+    renderShoppingList();
+
+    showMessage("Your shopping list has been cleared.");
+});
+
+
+
+function updateTotals() {
+    let fullTotal = 0;
+    let purchasedTotal = 0;
+
+    shoppingItems.forEach(function (item) {
+        fullTotal += item.price;
+
         if (item.purchased) {
-            total += item.price;
+            purchasedTotal += item.price;
         }
     });
 
-    totalDisplay.textContent = "Total Cost: " + total.toFixed(2);
+    const remainingTotal = fullTotal - purchasedTotal;
+
+    document.getElementById("full-total").textContent =
+        fullTotal.toFixed(2);
+
+    document.getElementById("purchased-total").textContent =
+        purchasedTotal.toFixed(2);
+
+    document.getElementById("remaining-total").textContent =
+        remainingTotal.toFixed(2);
 }
+
 
 
 renderShoppingList();
